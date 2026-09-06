@@ -492,27 +492,27 @@ public class HospitalManagementSystem {
 
             switch (choice) {
                 case 1: {
-                    int id = readInt("Enter Patient ID: ");
+                    int id = readPositiveInt("Enter Patient ID: ");
                     if (patientRecords.search(id) != null) {
                         System.out.println("A patient with ID " + id + " already exists.");
                         break;
                     }
-                    String name = readString("Enter Patient Name: ");
-                    int age = readInt("Enter Age: ");
-                    String contact = readString("Enter Contact Number: ");
-                    String condition = readString("Enter Medical Condition: ");
+                    String name = readRequiredString("Enter Patient Name: ");
+                    int age = readPositiveInt("Enter Age: ");
+                    String contact = readRequiredString("Enter Contact Number: ");
+                    String condition = readRequiredString("Enter Medical Condition: ");
                     patientRecords.insert(new Patient(id, name, age, contact, condition));
                     System.out.println("Patient added successfully.");
                     break;
                 }
                 case 2: {
-                    int id = readInt("Enter Patient ID to search: ");
+                    int id = readPositiveInt("Enter Patient ID to search: ");
                     Patient p = patientRecords.search(id);
                     System.out.println(p != null ? "Found -> " + p : "Patient not found.");
                     break;
                 }
                 case 3: {
-                    int id = readInt("Enter Patient ID to delete: ");
+                    int id = readPositiveInt("Enter Patient ID to delete: ");
                     boolean removed = patientRecords.delete(id);
                     System.out.println(removed ? "Patient deleted successfully." : "Patient not found.");
                     break;
@@ -543,16 +543,16 @@ public class HospitalManagementSystem {
 
             switch (choice) {
                 case 1: {
-                    int id = readInt("Enter Patient ID: ");
+                    int id = readPositiveInt("Enter Patient ID: ");
                     Patient existing = patientRecords.search(id);
                     if (existing != null) {
                         emergencyQueue.enqueue(existing);
                     } else {
                         System.out.println("Patient not found in records. Please enter details to register:");
-                        String name = readString("Enter Patient Name: ");
-                        int age = readInt("Enter Age: ");
-                        String contact = readString("Enter Contact Number: ");
-                        String condition = readString("Enter Medical Condition: ");
+                        String name = readRequiredString("Enter Patient Name: ");
+                        int age = readPositiveInt("Enter Age: ");
+                        String contact = readRequiredString("Enter Contact Number: ");
+                        String condition = readRequiredString("Enter Medical Condition: ");
                         Patient p = new Patient(id, name, age, contact, condition);
                         patientRecords.insert(p); // also register in BST records
                         emergencyQueue.enqueue(p);
@@ -563,8 +563,8 @@ public class HospitalManagementSystem {
                     Patient next = emergencyQueue.dequeue();
                     if (next != null) {
                         System.out.println("Now treating -> " + next);
-                        String treatment = readString("Enter Treatment Details: ");
-                        String date = readString("Enter Date Completed (e.g. 2026-09-06): ");
+                        String treatment = readRequiredString("Enter Treatment Details: ");
+                        String date = readRequiredString("Enter Date Completed (e.g. 2026-09-06): ");
                         treatmentHistory.push(new TreatmentRecord(
                                 next.patientId, next.name, treatment, date));
                         System.out.println("Treatment completed and added to history.");
@@ -596,17 +596,17 @@ public class HospitalManagementSystem {
 
             switch (choice) {
                 case 1: {
-                    int id = readInt("Enter Patient ID: ");
+                    int id = readPositiveInt("Enter Patient ID: ");
                     String name;
                     Patient existing = patientRecords.search(id);
                     if (existing != null) {
                         name = existing.name;
                         System.out.println("Matched patient record: " + existing);
                     } else {
-                        name = readString("Patient not in records. Enter Patient Name: ");
+                        name = readRequiredString("Patient not in records. Enter Patient Name: ");
                     }
-                    String treatment = readString("Enter Treatment Details: ");
-                    String date = readString("Enter Date Completed (e.g. 2026-09-06): ");
+                    String treatment = readRequiredString("Enter Treatment Details: ");
+                    String date = readRequiredString("Enter Date Completed (e.g. 2026-09-06): ");
                     treatmentHistory.push(new TreatmentRecord(id, name, treatment, date));
                     break;
                 }
@@ -631,7 +631,7 @@ public class HospitalManagementSystem {
 
     /* ---------------------- 4. Linked List Menu ---------------------- */
     private static void patientVisitHistoryMenu() {
-        int id = readInt("Enter Patient ID to manage visit history: ");
+        int id = readPositiveInt("Enter Patient ID to manage visit history: ");
         Patient p = patientRecords.search(id);
         if (p == null) {
             System.out.println("Patient not found. Please add the patient to records first (Option 1).");
@@ -650,23 +650,23 @@ public class HospitalManagementSystem {
 
             switch (choice) {
                 case 1: {
-                    int visitId = readInt("Enter Visit ID: ");
-                    String date = readString("Enter Visit Date (e.g. 2026-09-06): ");
-                    String doctor = readString("Enter Doctor Name: ");
-                    String diagnosis = readString("Enter Diagnosis: ");
-                    String treatment = readString("Enter Treatment: ");
+                    int visitId = readPositiveInt("Enter Visit ID: ");
+                    String date = readRequiredString("Enter Visit Date (e.g. 2026-09-06): ");
+                    String doctor = readRequiredString("Enter Doctor Name: ");
+                    String diagnosis = readRequiredString("Enter Diagnosis: ");
+                    String treatment = readRequiredString("Enter Treatment: ");
                     p.visitHistory.addVisit(new Visit(visitId, date, doctor, diagnosis, treatment));
                     System.out.println("Visit added successfully.");
                     break;
                 }
                 case 2: {
-                    int visitId = readInt("Enter Visit ID to remove: ");
+                    int visitId = readPositiveInt("Enter Visit ID to remove: ");
                     boolean removed = p.visitHistory.removeVisit(visitId);
                     System.out.println(removed ? "Visit removed successfully." : "Visit ID not found.");
                     break;
                 }
                 case 3: {
-                    int visitId = readInt("Enter Visit ID to search: ");
+                    int visitId = readPositiveInt("Enter Visit ID to search: ");
                     Visit v = p.visitHistory.searchVisit(visitId);
                     System.out.println(v != null ? "Found ->\n" + v : "Visit ID not found.");
                     break;
@@ -697,8 +697,26 @@ public class HospitalManagementSystem {
         }
     }
 
+    private static int readPositiveInt(String prompt) {
+        while (true) {
+            int value = readInt(prompt);
+            if (value > 0)
+                return value;
+            System.out.println("Please enter a number greater than zero.");
+        }
+    }
+
     private static String readString(String prompt) {
         System.out.print(prompt);
         return sc.nextLine().trim();
+    }
+
+    private static String readRequiredString(String prompt) {
+        while (true) {
+            String value = readString(prompt);
+            if (!value.isEmpty())
+                return value;
+            System.out.println("This field cannot be empty.");
+        }
     }
 }
