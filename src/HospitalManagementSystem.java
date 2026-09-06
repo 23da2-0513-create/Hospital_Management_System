@@ -1,0 +1,699 @@
+import java.util.Scanner;
+
+/* =========================================================================
+   HOSPITAL MANAGEMENT SYSTEM
+   ---------------------------------------------------------------------
+   Demonstrates 4 core data structures:
+     1. Binary Search Tree (BST)   -> Patient Records          (keyed by ID)
+     2. Queue (linked list based)  -> Emergency Patient Queue  (FIFO)
+     3. Stack (linked list based)  -> Treatment History        (LIFO)
+     4. Singly Linked List         -> Per-Patient Visit History
+   ========================================================================= */
+
+public class HospitalManagementSystem {
+
+    /*
+     * =====================================================================
+     * 0. SUPPORT CLASS: Visit (node payload for the Visit History list)
+     * =====================================================================
+     */
+    static class Visit {
+        int visitId;
+        String visitDate;
+        String doctorName;
+        String diagnosis;
+        String treatment;
+
+        Visit(int visitId, String visitDate, String doctorName, String diagnosis, String treatment) {
+            this.visitId = visitId;
+            this.visitDate = visitDate;
+            this.doctorName = doctorName;
+            this.diagnosis = diagnosis;
+            this.treatment = treatment;
+        }
+
+        @Override
+        public String toString() {
+            return "    Visit ID: " + visitId +
+                    " | Date: " + visitDate +
+                    " | Doctor: " + doctorName +
+                    " | Diagnosis: " + diagnosis +
+                    " | Treatment: " + treatment;
+        }
+    }
+
+    /*
+     * =====================================================================
+     * 4. SINGLY LINKED LIST -> Patient Visit History
+     * =====================================================================
+     */
+    static class VisitNode {
+        Visit data;
+        VisitNode next;
+
+        VisitNode(Visit data) {
+            this.data = data;
+        }
+    }
+
+    static class VisitHistoryList {
+        private VisitNode head;
+
+        // Add a new visit at the end of the list
+        void addVisit(Visit v) {
+            VisitNode newNode = new VisitNode(v);
+            if (head == null) {
+                head = newNode;
+                return;
+            }
+            VisitNode temp = head;
+            while (temp.next != null) {
+                temp = temp.next;
+            }
+            temp.next = newNode;
+        }
+
+        // Remove a visit by Visit ID
+        boolean removeVisit(int visitId) {
+            if (head == null)
+                return false;
+
+            if (head.data.visitId == visitId) {
+                head = head.next;
+                return true;
+            }
+
+            VisitNode prev = head;
+            VisitNode curr = head.next;
+            while (curr != null) {
+                if (curr.data.visitId == visitId) {
+                    prev.next = curr.next;
+                    return true;
+                }
+                prev = curr;
+                curr = curr.next;
+            }
+            return false;
+        }
+
+        // Search for a visit by Visit ID
+        Visit searchVisit(int visitId) {
+            VisitNode temp = head;
+            while (temp != null) {
+                if (temp.data.visitId == visitId) {
+                    return temp.data;
+                }
+                temp = temp.next;
+            }
+            return null;
+        }
+
+        // Display the full visit history
+        void display() {
+            if (head == null) {
+                System.out.println("    No visit history available.");
+                return;
+            }
+            VisitNode temp = head;
+            while (temp != null) {
+                System.out.println(temp.data);
+                temp = temp.next;
+            }
+        }
+
+        boolean isEmpty() {
+            return head == null;
+        }
+    }
+
+    /*
+     * =====================================================================
+     * SUPPORT CLASS: Patient (payload stored in the BST, and in the Queue)
+     * =====================================================================
+     */
+    static class Patient {
+        int patientId;
+        String name;
+        int age;
+        String contact;
+        String medicalCondition;
+        VisitHistoryList visitHistory; // each patient owns a singly linked list
+
+        Patient(int patientId, String name, int age, String contact, String medicalCondition) {
+            this.patientId = patientId;
+            this.name = name;
+            this.age = age;
+            this.contact = contact;
+            this.medicalCondition = medicalCondition;
+            this.visitHistory = new VisitHistoryList();
+        }
+
+        @Override
+        public String toString() {
+            return "Patient ID: " + patientId +
+                    " | Name: " + name +
+                    " | Age: " + age +
+                    " | Contact: " + contact +
+                    " | Condition: " + medicalCondition;
+        }
+    }
+
+    /*
+     * =====================================================================
+     * 1. BINARY SEARCH TREE -> Patient Records (keyed by Patient ID)
+     * =====================================================================
+     */
+    static class BSTNode {
+        Patient data;
+        BSTNode left, right;
+
+        BSTNode(Patient data) {
+            this.data = data;
+        }
+    }
+
+    static class PatientBST {
+        private BSTNode root;
+
+        // ---- Insert ----
+        void insert(Patient p) {
+            root = insertRec(root, p);
+        }
+
+        private BSTNode insertRec(BSTNode node, Patient p) {
+            if (node == null)
+                return new BSTNode(p);
+            if (p.patientId < node.data.patientId) {
+                node.left = insertRec(node.left, p);
+            } else if (p.patientId > node.data.patientId) {
+                node.right = insertRec(node.right, p);
+            } else {
+                System.out.println("A patient with ID " + p.patientId + " already exists. Insert cancelled.");
+            }
+            return node;
+        }
+
+        // ---- Search ----
+        Patient search(int patientId) {
+            return searchRec(root, patientId);
+        }
+
+        private Patient searchRec(BSTNode node, int patientId) {
+            if (node == null)
+                return null;
+            if (patientId == node.data.patientId)
+                return node.data;
+            return patientId < node.data.patientId
+                    ? searchRec(node.left, patientId)
+                    : searchRec(node.right, patientId);
+        }
+
+        // ---- Delete ----
+        boolean delete(int patientId) {
+            if (search(patientId) == null)
+                return false;
+            root = deleteRec(root, patientId);
+            return true;
+        }
+
+        private BSTNode deleteRec(BSTNode node, int patientId) {
+            if (node == null)
+                return null;
+
+            if (patientId < node.data.patientId) {
+                node.left = deleteRec(node.left, patientId);
+            } else if (patientId > node.data.patientId) {
+                node.right = deleteRec(node.right, patientId);
+            } else {
+                // Node found
+                if (node.left == null)
+                    return node.right;
+                if (node.right == null)
+                    return node.left;
+
+                // Two children: replace with in-order successor (smallest in right subtree)
+                BSTNode successor = findMin(node.right);
+                node.data = successor.data;
+                node.right = deleteRec(node.right, successor.data.patientId);
+            }
+            return node;
+        }
+
+        private BSTNode findMin(BSTNode node) {
+            while (node.left != null)
+                node = node.left;
+            return node;
+        }
+
+        // ---- In-order traversal (ascending Patient ID) ----
+        void inorderDisplay() {
+            if (root == null) {
+                System.out.println("No patient records found.");
+                return;
+            }
+            inorderRec(root);
+        }
+
+        private void inorderRec(BSTNode node) {
+            if (node == null)
+                return;
+            inorderRec(node.left);
+            System.out.println(node.data);
+            inorderRec(node.right);
+        }
+
+        boolean isEmpty() {
+            return root == null;
+        }
+    }
+
+    /*
+     * =====================================================================
+     * 2. QUEUE (linked list based) -> Emergency Patient Queue (FIFO)
+     * =====================================================================
+     */
+    static class QueueNode {
+        Patient data;
+        QueueNode next;
+
+        QueueNode(Patient data) {
+            this.data = data;
+        }
+    }
+
+    static class EmergencyQueue {
+        private QueueNode front, rear;
+        private int size = 0;
+
+        // ---- Enqueue ----
+        void enqueue(Patient p) {
+            QueueNode newNode = new QueueNode(p);
+            if (rear == null) {
+                front = rear = newNode;
+            } else {
+                rear.next = newNode;
+                rear = newNode;
+            }
+            size++;
+            System.out.println("Patient \"" + p.name + "\" (ID: " + p.patientId + ") added to emergency queue.");
+        }
+
+        // ---- Dequeue ----
+        Patient dequeue() {
+            if (isEmpty()) {
+                System.out.println("Emergency queue is empty. No patient to treat.");
+                return null;
+            }
+            Patient p = front.data;
+            front = front.next;
+            if (front == null)
+                rear = null;
+            size--;
+            return p;
+        }
+
+        // ---- Display ----
+        void display() {
+            if (isEmpty()) {
+                System.out.println("Emergency queue is currently empty.");
+                return;
+            }
+            System.out.println("Patients waiting (front -> rear):");
+            QueueNode temp = front;
+            int position = 1;
+            while (temp != null) {
+                System.out.println(position + ". " + temp.data);
+                temp = temp.next;
+                position++;
+            }
+        }
+
+        boolean isEmpty() {
+            return front == null;
+        }
+
+        int size() {
+            return size;
+        }
+    }
+
+    /*
+     * =====================================================================
+     * SUPPORT CLASS: TreatmentRecord (payload for the Treatment History stack)
+     * =====================================================================
+     */
+    static class TreatmentRecord {
+        int patientId;
+        String patientName;
+        String treatmentDetails;
+        String dateCompleted;
+
+        TreatmentRecord(int patientId, String patientName, String treatmentDetails, String dateCompleted) {
+            this.patientId = patientId;
+            this.patientName = patientName;
+            this.treatmentDetails = treatmentDetails;
+            this.dateCompleted = dateCompleted;
+        }
+
+        @Override
+        public String toString() {
+            return "Patient ID: " + patientId +
+                    " | Name: " + patientName +
+                    " | Treatment: " + treatmentDetails +
+                    " | Completed On: " + dateCompleted;
+        }
+    }
+
+    /*
+     * =====================================================================
+     * 3. STACK (linked list based) -> Treatment History (LIFO)
+     * =====================================================================
+     */
+    static class StackNode {
+        TreatmentRecord data;
+        StackNode next;
+
+        StackNode(TreatmentRecord data) {
+            this.data = data;
+        }
+    }
+
+    static class TreatmentHistoryStack {
+        private StackNode top;
+        private int size = 0;
+
+        // ---- Push ----
+        void push(TreatmentRecord record) {
+            StackNode newNode = new StackNode(record);
+            newNode.next = top;
+            top = newNode;
+            size++;
+            System.out.println("Treatment record for \"" + record.patientName + "\" pushed onto history stack.");
+        }
+
+        // ---- Pop ----
+        TreatmentRecord pop() {
+            if (isEmpty()) {
+                System.out.println("Treatment history stack is empty. Nothing to pop.");
+                return null;
+            }
+            TreatmentRecord record = top.data;
+            top = top.next;
+            size--;
+            return record;
+        }
+
+        // ---- Display (top -> bottom, i.e. most recent first) ----
+        void display() {
+            if (isEmpty()) {
+                System.out.println("No treatment records available.");
+                return;
+            }
+            System.out.println("Treatment history (most recent first):");
+            StackNode temp = top;
+            int position = 1;
+            while (temp != null) {
+                System.out.println(position + ". " + temp.data);
+                temp = temp.next;
+                position++;
+            }
+        }
+
+        boolean isEmpty() {
+            return top == null;
+        }
+
+        int size() {
+            return size;
+        }
+    }
+
+    /*
+     * =====================================================================
+     * MAIN PROGRAM -> Menu-driven console interface
+     * =====================================================================
+     */
+    private static final Scanner sc = new Scanner(System.in);
+    private static final PatientBST patientRecords = new PatientBST();
+    private static final EmergencyQueue emergencyQueue = new EmergencyQueue();
+    private static final TreatmentHistoryStack treatmentHistory = new TreatmentHistoryStack();
+
+    public static void main(String[] args) {
+        boolean running = true;
+        while (running) {
+            printMainMenu();
+            int choice = readInt("Enter your choice: ");
+            switch (choice) {
+                case 1:
+                    patientRecordsMenu();
+                    break;
+                case 2:
+                    emergencyQueueMenu();
+                    break;
+                case 3:
+                    treatmentHistoryMenu();
+                    break;
+                case 4:
+                    patientVisitHistoryMenu();
+                    break;
+                case 0:
+                    running = false;
+                    System.out.println("Exiting Hospital Management System. Goodbye!");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+        sc.close();
+    }
+
+    private static void printMainMenu() {
+        System.out.println("\n=============================================");
+        System.out.println("       HOSPITAL MANAGEMENT SYSTEM");
+        System.out.println("=============================================");
+        System.out.println("1. Patient Records (BST)");
+        System.out.println("2. Emergency Patient Queue (Queue)");
+        System.out.println("3. Treatment History (Stack)");
+        System.out.println("4. Patient Visit History (Linked List)");
+        System.out.println("0. Exit");
+    }
+
+    /* --------------------------- 1. BST Menu --------------------------- */
+    private static void patientRecordsMenu() {
+        boolean back = false;
+        while (!back) {
+            System.out.println("\n--- Patient Records (BST) ---");
+            System.out.println("1. Insert new patient");
+            System.out.println("2. Search patient by ID");
+            System.out.println("3. Delete patient");
+            System.out.println("4. Display all patients (in-order, ascending ID)");
+            System.out.println("0. Back to main menu");
+            int choice = readInt("Enter your choice: ");
+
+            switch (choice) {
+                case 1: {
+                    int id = readInt("Enter Patient ID: ");
+                    if (patientRecords.search(id) != null) {
+                        System.out.println("A patient with ID " + id + " already exists.");
+                        break;
+                    }
+                    String name = readString("Enter Patient Name: ");
+                    int age = readInt("Enter Age: ");
+                    String contact = readString("Enter Contact Number: ");
+                    String condition = readString("Enter Medical Condition: ");
+                    patientRecords.insert(new Patient(id, name, age, contact, condition));
+                    System.out.println("Patient added successfully.");
+                    break;
+                }
+                case 2: {
+                    int id = readInt("Enter Patient ID to search: ");
+                    Patient p = patientRecords.search(id);
+                    System.out.println(p != null ? "Found -> " + p : "Patient not found.");
+                    break;
+                }
+                case 3: {
+                    int id = readInt("Enter Patient ID to delete: ");
+                    boolean removed = patientRecords.delete(id);
+                    System.out.println(removed ? "Patient deleted successfully." : "Patient not found.");
+                    break;
+                }
+                case 4:
+                    System.out.println("--- Patient List (ascending Patient ID) ---");
+                    patientRecords.inorderDisplay();
+                    break;
+                case 0:
+                    back = true;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    /* --------------------------- 2. Queue Menu --------------------------- */
+    private static void emergencyQueueMenu() {
+        boolean back = false;
+        while (!back) {
+            System.out.println("\n--- Emergency Patient Queue (Queue) ---");
+            System.out.println("1. Enqueue patient (add to waiting queue)");
+            System.out.println("2. Dequeue patient (send next for treatment)");
+            System.out.println("3. Display waiting queue");
+            System.out.println("0. Back to main menu");
+            int choice = readInt("Enter your choice: ");
+
+            switch (choice) {
+                case 1: {
+                    int id = readInt("Enter Patient ID: ");
+                    Patient existing = patientRecords.search(id);
+                    if (existing != null) {
+                        emergencyQueue.enqueue(existing);
+                    } else {
+                        System.out.println("Patient not found in records. Please enter details to register:");
+                        String name = readString("Enter Patient Name: ");
+                        int age = readInt("Enter Age: ");
+                        String contact = readString("Enter Contact Number: ");
+                        String condition = readString("Enter Medical Condition: ");
+                        Patient p = new Patient(id, name, age, contact, condition);
+                        patientRecords.insert(p); // also register in BST records
+                        emergencyQueue.enqueue(p);
+                    }
+                    break;
+                }
+                case 2: {
+                    Patient next = emergencyQueue.dequeue();
+                    if (next != null) {
+                        System.out.println("Now treating -> " + next);
+                    }
+                    break;
+                }
+                case 3:
+                    emergencyQueue.display();
+                    break;
+                case 0:
+                    back = true;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    /* --------------------------- 3. Stack Menu --------------------------- */
+    private static void treatmentHistoryMenu() {
+        boolean back = false;
+        while (!back) {
+            System.out.println("\n--- Treatment History (Stack) ---");
+            System.out.println("1. Push completed treatment record");
+            System.out.println("2. Pop most recent treatment record");
+            System.out.println("3. Display treatment history");
+            System.out.println("0. Back to main menu");
+            int choice = readInt("Enter your choice: ");
+
+            switch (choice) {
+                case 1: {
+                    int id = readInt("Enter Patient ID: ");
+                    String name;
+                    Patient existing = patientRecords.search(id);
+                    if (existing != null) {
+                        name = existing.name;
+                        System.out.println("Matched patient record: " + existing);
+                    } else {
+                        name = readString("Patient not in records. Enter Patient Name: ");
+                    }
+                    String treatment = readString("Enter Treatment Details: ");
+                    String date = readString("Enter Date Completed (e.g. 2026-09-06): ");
+                    treatmentHistory.push(new TreatmentRecord(id, name, treatment, date));
+                    break;
+                }
+                case 2: {
+                    TreatmentRecord popped = treatmentHistory.pop();
+                    if (popped != null) {
+                        System.out.println("Removed -> " + popped);
+                    }
+                    break;
+                }
+                case 3:
+                    treatmentHistory.display();
+                    break;
+                case 0:
+                    back = true;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    /* ---------------------- 4. Linked List Menu ---------------------- */
+    private static void patientVisitHistoryMenu() {
+        int id = readInt("Enter Patient ID to manage visit history: ");
+        Patient p = patientRecords.search(id);
+        if (p == null) {
+            System.out.println("Patient not found. Please add the patient to records first (Option 1).");
+            return;
+        }
+
+        boolean back = false;
+        while (!back) {
+            System.out.println("\n--- Visit History for " + p.name + " (ID: " + p.patientId + ") ---");
+            System.out.println("1. Add new visit");
+            System.out.println("2. Remove visit by Visit ID");
+            System.out.println("3. Search visit by Visit ID");
+            System.out.println("4. Display full visit history");
+            System.out.println("0. Back to main menu");
+            int choice = readInt("Enter your choice: ");
+
+            switch (choice) {
+                case 1: {
+                    int visitId = readInt("Enter Visit ID: ");
+                    String date = readString("Enter Visit Date (e.g. 2026-09-06): ");
+                    String doctor = readString("Enter Doctor Name: ");
+                    String diagnosis = readString("Enter Diagnosis: ");
+                    String treatment = readString("Enter Treatment: ");
+                    p.visitHistory.addVisit(new Visit(visitId, date, doctor, diagnosis, treatment));
+                    System.out.println("Visit added successfully.");
+                    break;
+                }
+                case 2: {
+                    int visitId = readInt("Enter Visit ID to remove: ");
+                    boolean removed = p.visitHistory.removeVisit(visitId);
+                    System.out.println(removed ? "Visit removed successfully." : "Visit ID not found.");
+                    break;
+                }
+                case 3: {
+                    int visitId = readInt("Enter Visit ID to search: ");
+                    Visit v = p.visitHistory.searchVisit(visitId);
+                    System.out.println(v != null ? "Found ->\n" + v : "Visit ID not found.");
+                    break;
+                }
+                case 4:
+                    System.out.println("--- Full Visit History ---");
+                    p.visitHistory.display();
+                    break;
+                case 0:
+                    back = true;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    /* --------------------------- Input helpers --------------------------- */
+    private static int readInt(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String line = sc.nextLine().trim();
+            try {
+                return Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid whole number.");
+            }
+        }
+    }
+
+    private static String readString(String prompt) {
+        System.out.print(prompt);
+        return sc.nextLine().trim();
+    }
+}
