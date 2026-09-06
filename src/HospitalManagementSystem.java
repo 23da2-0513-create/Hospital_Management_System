@@ -563,6 +563,11 @@ public class HospitalManagementSystem {
                     Patient next = emergencyQueue.dequeue();
                     if (next != null) {
                         System.out.println("Now treating -> " + next);
+                        String treatment = readString("Enter Treatment Details: ");
+                        String date = readString("Enter Date Completed (e.g. 2026-09-06): ");
+                        treatmentHistory.push(new TreatmentRecord(
+                                next.patientId, next.name, treatment, date));
+                        System.out.println("Treatment completed and added to history.");
                     }
                     break;
                 }
