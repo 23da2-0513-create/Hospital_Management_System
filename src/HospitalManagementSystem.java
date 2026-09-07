@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 /* =========================================================================
@@ -664,7 +666,7 @@ public class HospitalManagementSystem {
                     if (next != null) {
                         System.out.println("Now treating -> " + next);
                         String treatment = readRequiredString("Enter Treatment Details: ");
-                        String date = readRequiredString("Enter Date Completed (e.g. 2026-09-06): ");
+                        String date = readDate("Enter Date Completed (YYYY-MM-DD): ");
                         treatmentHistory.push(new TreatmentRecord(
                                 next.patientId, next.name, treatment, date));
                         System.out.println("Treatment completed and added to history.");
@@ -708,7 +710,7 @@ public class HospitalManagementSystem {
                         name = readRequiredString("Patient not in records. Enter Patient Name: ");
                     }
                     String treatment = readRequiredString("Enter Treatment Details: ");
-                    String date = readRequiredString("Enter Date Completed (e.g. 2026-09-06): ");
+                    String date = readDate("Enter Date Completed (YYYY-MM-DD): ");
                     treatmentHistory.push(new TreatmentRecord(id, name, treatment, date));
                     break;
                 }
@@ -768,7 +770,7 @@ public class HospitalManagementSystem {
                         System.out.println("A visit with ID " + visitId + " already exists for this patient.");
                         break;
                     }
-                    String date = readRequiredString("Enter Visit Date (e.g. 2026-09-06): ");
+                    String date = readDate("Enter Visit Date (YYYY-MM-DD): ");
                     String doctor = readRequiredString("Enter Doctor Name: ");
                     String diagnosis = readRequiredString("Enter Diagnosis: ");
                     String treatment = readRequiredString("Enter Treatment: ");
@@ -839,6 +841,18 @@ public class HospitalManagementSystem {
             if (!value.isEmpty())
                 return value;
             System.out.println("This field cannot be empty.");
+        }
+    }
+
+    private static String readDate(String prompt) {
+        while (true) {
+            String value = readRequiredString(prompt);
+            try {
+                LocalDate.parse(value);
+                return value;
+            } catch (DateTimeParseException e) {
+                System.out.println("Please enter a valid date in YYYY-MM-DD format.");
+            }
         }
     }
 }
