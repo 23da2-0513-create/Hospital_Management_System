@@ -294,7 +294,11 @@ public class HospitalManagementSystem {
         private int size = 0;
 
         // ---- Enqueue ----
-        void enqueue(Patient p) {
+        boolean enqueue(Patient p) {
+            if (containsPatient(p.patientId)) {
+                System.out.println("Patient is already waiting in the emergency queue.");
+                return false;
+            }
             QueueNode newNode = new QueueNode(p);
             if (rear == null) {
                 front = rear = newNode;
@@ -304,6 +308,7 @@ public class HospitalManagementSystem {
             }
             size++;
             System.out.println("Patient \"" + p.name + "\" (ID: " + p.patientId + ") added to emergency queue.");
+            return true;
         }
 
         // ---- Dequeue ----
@@ -326,7 +331,7 @@ public class HospitalManagementSystem {
                 System.out.println("Emergency queue is currently empty.");
                 return;
             }
-            System.out.println("Patients waiting (front -> rear):");
+            System.out.println("Patients waiting (front -> rear, total: " + size + "):");
             QueueNode temp = front;
             int position = 1;
             while (temp != null) {
@@ -338,6 +343,16 @@ public class HospitalManagementSystem {
 
         boolean isEmpty() {
             return front == null;
+        }
+
+        boolean containsPatient(int patientId) {
+            QueueNode current = front;
+            while (current != null) {
+                if (current.data.patientId == patientId)
+                    return true;
+                current = current.next;
+            }
+            return false;
         }
 
         int size() {
