@@ -341,6 +341,14 @@ public class HospitalManagementSystem {
             return p;
         }
 
+        Patient peek() {
+            if (isEmpty()) {
+                System.out.println("Emergency queue is empty. No patient is waiting.");
+                return null;
+            }
+            return front.data;
+        }
+
         // ---- Display ----
         void display() {
             if (isEmpty()) {
@@ -640,6 +648,7 @@ public class HospitalManagementSystem {
             System.out.println("1. Enqueue patient (add to waiting queue)");
             System.out.println("2. Dequeue patient (send next for treatment)");
             System.out.println("3. Display waiting queue");
+            System.out.println("4. View next patient without removing");
             System.out.println("0. Back to main menu");
             int choice = readInt("Enter your choice: ");
 
@@ -676,6 +685,12 @@ public class HospitalManagementSystem {
                 case 3:
                     emergencyQueue.display();
                     break;
+                case 4: {
+                    Patient next = emergencyQueue.peek();
+                    if (next != null)
+                        System.out.println("Next patient -> " + next);
+                    break;
+                }
                 case 0:
                     back = true;
                     break;
