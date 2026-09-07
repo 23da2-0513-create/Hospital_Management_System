@@ -58,19 +58,25 @@ public class HospitalManagementSystem {
 
     static class VisitHistoryList {
         private VisitNode head;
+        private int size;
 
         // Add a new visit at the end of the list
-        void addVisit(Visit v) {
+        boolean addVisit(Visit v) {
+            if (searchVisit(v.visitId) != null)
+                return false;
             VisitNode newNode = new VisitNode(v);
             if (head == null) {
                 head = newNode;
-                return;
+                size++;
+                return true;
             }
             VisitNode temp = head;
             while (temp.next != null) {
                 temp = temp.next;
             }
             temp.next = newNode;
+            size++;
+            return true;
         }
 
         // Remove a visit by Visit ID
@@ -80,6 +86,7 @@ public class HospitalManagementSystem {
 
             if (head.data.visitId == visitId) {
                 head = head.next;
+                size--;
                 return true;
             }
 
@@ -88,6 +95,7 @@ public class HospitalManagementSystem {
             while (curr != null) {
                 if (curr.data.visitId == visitId) {
                     prev.next = curr.next;
+                    size--;
                     return true;
                 }
                 prev = curr;
@@ -123,6 +131,10 @@ public class HospitalManagementSystem {
 
         boolean isEmpty() {
             return head == null;
+        }
+
+        int size() {
+            return size;
         }
     }
 
@@ -716,12 +728,19 @@ public class HospitalManagementSystem {
             switch (choice) {
                 case 1: {
                     int visitId = readPositiveInt("Enter Visit ID: ");
+                    if (p.visitHistory.searchVisit(visitId) != null) {
+                        System.out.println("A visit with ID " + visitId + " already exists for this patient.");
+                        break;
+                    }
                     String date = readRequiredString("Enter Visit Date (e.g. 2026-09-06): ");
                     String doctor = readRequiredString("Enter Doctor Name: ");
                     String diagnosis = readRequiredString("Enter Diagnosis: ");
                     String treatment = readRequiredString("Enter Treatment: ");
-                    p.visitHistory.addVisit(new Visit(visitId, date, doctor, diagnosis, treatment));
-                    System.out.println("Visit added successfully.");
+                    boolean added = p.visitHistory.addVisit(
+                            new Visit(visitId, date, doctor, diagnosis, treatment));
+                    System.out.println(added
+                            ? "Visit added successfully."
+                            : "A visit with ID " + visitId + " already exists for this patient.");
                     break;
                 }
                 case 2: {
