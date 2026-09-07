@@ -426,6 +426,14 @@ public class HospitalManagementSystem {
             return record;
         }
 
+        TreatmentRecord peek() {
+            if (isEmpty()) {
+                System.out.println("Treatment history stack is empty. Nothing to peek.");
+                return null;
+            }
+            return top.data;
+        }
+
         // ---- Display (top -> bottom, i.e. most recent first) ----
         void display() {
             if (isEmpty()) {
@@ -636,6 +644,7 @@ public class HospitalManagementSystem {
             System.out.println("2. Pop most recent treatment record");
             System.out.println("3. Display treatment history");
             System.out.println("4. Display treatment history for a patient");
+            System.out.println("5. View most recent treatment record");
             System.out.println("0. Back to main menu");
             int choice = readInt("Enter your choice: ");
 
@@ -668,6 +677,12 @@ public class HospitalManagementSystem {
                 case 4: {
                     int id = readPositiveInt("Enter Patient ID: ");
                     treatmentHistory.displayForPatient(id);
+                    break;
+                }
+                case 5: {
+                    TreatmentRecord latest = treatmentHistory.peek();
+                    if (latest != null)
+                        System.out.println("Most recent treatment -> " + latest);
                     break;
                 }
                 case 0:
