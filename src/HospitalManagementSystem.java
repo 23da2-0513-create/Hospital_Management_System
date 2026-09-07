@@ -539,6 +539,9 @@ public class HospitalManagementSystem {
                 case 4:
                     patientVisitHistoryMenu();
                     break;
+                case 5:
+                    displaySystemSummary();
+                    break;
                 case 0:
                     running = false;
                     System.out.println("Exiting Hospital Management System. Goodbye!");
@@ -558,7 +561,16 @@ public class HospitalManagementSystem {
         System.out.println("2. Emergency Patient Queue (Queue)");
         System.out.println("3. Treatment History (Stack)");
         System.out.println("4. Patient Visit History (Linked List)");
+        System.out.println("5. Display System Summary");
         System.out.println("0. Exit");
+    }
+
+    private static void displaySystemSummary() {
+        System.out.println("\n--- System Summary ---");
+        System.out.println("Registered patients: " + patientRecords.size());
+        System.out.println("Patients waiting for emergency treatment: " + emergencyQueue.size());
+        System.out.println("Completed treatment records: " + treatmentHistory.size());
+        System.out.println("Visit histories are maintained per patient.");
     }
 
     /* --------------------------- 1. BST Menu --------------------------- */
