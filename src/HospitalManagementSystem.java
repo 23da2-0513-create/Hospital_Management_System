@@ -174,10 +174,15 @@ public class HospitalManagementSystem {
 
     static class PatientBST {
         private BSTNode root;
+        private int size;
 
         // ---- Insert ----
-        void insert(Patient p) {
+        boolean insert(Patient p) {
+            if (search(p.patientId) != null)
+                return false;
             root = insertRec(root, p);
+            size++;
+            return true;
         }
 
         private BSTNode insertRec(BSTNode node, Patient p) {
@@ -187,8 +192,6 @@ public class HospitalManagementSystem {
                 node.left = insertRec(node.left, p);
             } else if (p.patientId > node.data.patientId) {
                 node.right = insertRec(node.right, p);
-            } else {
-                System.out.println("A patient with ID " + p.patientId + " already exists. Insert cancelled.");
             }
             return node;
         }
@@ -213,6 +216,7 @@ public class HospitalManagementSystem {
             if (search(patientId) == null)
                 return false;
             root = deleteRec(root, patientId);
+            size--;
             return true;
         }
 
@@ -264,6 +268,10 @@ public class HospitalManagementSystem {
 
         boolean isEmpty() {
             return root == null;
+        }
+
+        int size() {
+            return size;
         }
     }
 
@@ -501,8 +509,10 @@ public class HospitalManagementSystem {
                     int age = readPositiveInt("Enter Age: ");
                     String contact = readRequiredString("Enter Contact Number: ");
                     String condition = readRequiredString("Enter Medical Condition: ");
-                    patientRecords.insert(new Patient(id, name, age, contact, condition));
-                    System.out.println("Patient added successfully.");
+                    boolean inserted = patientRecords.insert(new Patient(id, name, age, contact, condition));
+                    System.out.println(inserted
+                            ? "Patient added successfully."
+                            : "A patient with ID " + id + " already exists.");
                     break;
                 }
                 case 2: {
@@ -518,7 +528,8 @@ public class HospitalManagementSystem {
                     break;
                 }
                 case 4:
-                    System.out.println("--- Patient List (ascending Patient ID) ---");
+                    System.out.println("--- Patient List (ascending Patient ID, total: "
+                            + patientRecords.size() + ") ---");
                     patientRecords.inorderDisplay();
                     break;
                 case 0:
