@@ -442,6 +442,24 @@ public class HospitalManagementSystem {
             }
         }
 
+        void displayForPatient(int patientId) {
+            StackNode current = top;
+            int position = 1;
+            boolean found = false;
+            while (current != null) {
+                if (current.data.patientId == patientId) {
+                    if (!found)
+                        System.out.println("Treatment records for patient ID " + patientId + ":");
+                    System.out.println(position + ". " + current.data);
+                    found = true;
+                    position++;
+                }
+                current = current.next;
+            }
+            if (!found)
+                System.out.println("No treatment records found for patient ID " + patientId + ".");
+        }
+
         boolean isEmpty() {
             return top == null;
         }
@@ -617,6 +635,7 @@ public class HospitalManagementSystem {
             System.out.println("1. Push completed treatment record");
             System.out.println("2. Pop most recent treatment record");
             System.out.println("3. Display treatment history");
+            System.out.println("4. Display treatment history for a patient");
             System.out.println("0. Back to main menu");
             int choice = readInt("Enter your choice: ");
 
@@ -646,6 +665,11 @@ public class HospitalManagementSystem {
                 case 3:
                     treatmentHistory.display();
                     break;
+                case 4: {
+                    int id = readPositiveInt("Enter Patient ID: ");
+                    treatmentHistory.displayForPatient(id);
+                    break;
+                }
                 case 0:
                     back = true;
                     break;
