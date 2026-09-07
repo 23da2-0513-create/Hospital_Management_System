@@ -355,6 +355,26 @@ public class HospitalManagementSystem {
             }
         }
 
+        boolean removePatient(int patientId) {
+            QueueNode previous = null;
+            QueueNode current = front;
+            while (current != null) {
+                if (current.data.patientId == patientId) {
+                    if (previous == null)
+                        front = current.next;
+                    else
+                        previous.next = current.next;
+                    if (current == rear)
+                        rear = previous;
+                    size--;
+                    return true;
+                }
+                previous = current;
+                current = current.next;
+            }
+            return false;
+        }
+
         boolean isEmpty() {
             return front == null;
         }
@@ -579,6 +599,8 @@ public class HospitalManagementSystem {
                 case 3: {
                     int id = readPositiveInt("Enter Patient ID to delete: ");
                     boolean removed = patientRecords.delete(id);
+                    if (removed && emergencyQueue.removePatient(id))
+                        System.out.println("Patient was also removed from the emergency queue.");
                     System.out.println(removed ? "Patient deleted successfully." : "Patient not found.");
                     break;
                 }
