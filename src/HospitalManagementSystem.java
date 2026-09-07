@@ -80,28 +80,30 @@ public class HospitalManagementSystem {
         }
 
         // Remove a visit by Visit ID
-        boolean removeVisit(int visitId) {
+        Visit removeVisit(int visitId) {
             if (head == null)
-                return false;
+                return null;
 
             if (head.data.visitId == visitId) {
+                Visit removed = head.data;
                 head = head.next;
                 size--;
-                return true;
+                return removed;
             }
 
             VisitNode prev = head;
             VisitNode curr = head.next;
             while (curr != null) {
                 if (curr.data.visitId == visitId) {
+                    Visit removed = curr.data;
                     prev.next = curr.next;
                     size--;
-                    return true;
+                    return removed;
                 }
                 prev = curr;
                 curr = curr.next;
             }
-            return false;
+            return null;
         }
 
         // Search for a visit by Visit ID
@@ -745,8 +747,10 @@ public class HospitalManagementSystem {
                 }
                 case 2: {
                     int visitId = readPositiveInt("Enter Visit ID to remove: ");
-                    boolean removed = p.visitHistory.removeVisit(visitId);
-                    System.out.println(removed ? "Visit removed successfully." : "Visit ID not found.");
+                    Visit removed = p.visitHistory.removeVisit(visitId);
+                    System.out.println(removed != null
+                            ? "Removed ->\n" + removed
+                            : "Visit ID not found.");
                     break;
                 }
                 case 3: {
@@ -756,7 +760,7 @@ public class HospitalManagementSystem {
                     break;
                 }
                 case 4:
-                    System.out.println("--- Full Visit History ---");
+                    System.out.println("--- Full Visit History (total: " + p.visitHistory.size() + ") ---");
                     p.visitHistory.display();
                     break;
                 case 0:
